@@ -10,9 +10,19 @@ const Sidebar = () => {
   const { onlineUsers } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
+  const [searchInput, setSearchInput] = useState("");
+
   useEffect(() => {
     getUsers();
   }, [getUsers]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      getUsers(searchInput);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput, getUsers]);
 
   const filteredUsers = showOnlineOnly
     ? users.filter((user) => onlineUsers.includes(user._id))
@@ -20,14 +30,30 @@ const Sidebar = () => {
 
   if (isUsersLoading) return <SidebarSkeleton />;
 
+
+  
+
   return (
     <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
-      <div className="border-b border-base-300 w-full p-5">
+      <div className="border-b border-base-300 w-full p-5 ">
+         <div className="mt-3 hidden lg:flex lg:flex-col items-center gap-2">
+          <label className="cursor-pointer self-start">Search Users</label>
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="input border-2 border-gray-500 outline-1 self-start"
+            />
+        
+        
+        </div>
+      </div>
+
+      <div className="overflow-y-auto w-full py-3 px-3">
         <div className="flex items-center gap-2">
           <Users className="size-6" />
           <span className="font-medium hidden lg:block">Contacts</span>
         </div>
-        {/* TODO: Online filter toggle */}
         <div className="mt-3 hidden lg:flex items-center gap-2">
           <label className="cursor-pointer flex items-center gap-2">
             <input
@@ -40,9 +66,6 @@ const Sidebar = () => {
           </label>
           <span className="text-xs text-zinc-500">({onlineUsers.length - 1} online)</span>
         </div>
-      </div>
-
-      <div className="overflow-y-auto w-full py-3">
         {filteredUsers.map((user) => (
           <button
             key={user._id}
